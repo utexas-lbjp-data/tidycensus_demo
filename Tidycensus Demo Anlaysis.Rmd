@@ -1,0 +1,69 @@
+---
+title: "tidycensus Demo"
+author: "Matt Worthington"
+date: "October 8, 2021"
+output:
+  pdf_document: 
+    toc: yes
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+library(tidyverse)
+library(tidycensus)
+```
+
+## Step 1 - Get The Census Data
+
+The first step in my analysis is X, Y, Z. We're going to pull blah blah blah blah.
+
+```{r explore-acs-vars}
+acs_vars_2019 <- load_variables(2019, "acs5/profile")
+```
+
+```{r get-census-data}
+broadband_county_data <- get_acs(geography = "county",
+                          geometry = TRUE, 
+                          shift_geo = TRUE,
+                          variable = "DP02_0153P")
+
+broadband_state_data <- get_acs(geography = "state",
+                          geometry = TRUE, 
+                          shift_geo = TRUE,
+                          variable = "DP02_0153P")
+
+```
+
+## Step 2 - Transform The Data
+
+```{r clean-up-data}
+
+broadband_tx_data <- broadband_county_data |> 
+  filter(str_detect(NAME, "Texas")) |> 
+  filter(GEOID != "29215",
+         GEOID != "40139")
+
+```
+
+## Step 3 - Draw Some Maps or Charts
+
+```{r make-charts-us}
+
+broadband_county_data |> 
+  ggplot() +
+  aes(fill=estimate) +
+  geom_sf(color = NA) +
+  theme_void() +
+  labs(title = "The Landscape of Broadband Subscriptions in America",
+       subtitle = "Broadband Subscription Rates, by US County",
+       caption = "Source: American Community Survey, Profile Tables, 2015-2019 | Variable: DP02_0153P",
+       fill = "% of Subscriptions")
+
+ggsave("us_county_map_broadband.png", dpi = 200, width = 8, height = 6)
+
+```
